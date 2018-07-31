@@ -84,12 +84,12 @@ y=All_Output.transpose()
 X1=All_Input_cond.transpose()
 y1=All_Output.transpose()
 
-X=X[200000:1300000,:]
-y=y[200000:1300000,:]
+X=X[200100:200300,:]
+y=y[200100:200300,:]
 np.savetxt('T1.txt', X, delimiter=' ')
 np.savetxt('T2.txt', y, delimiter=' ')
-xPredicted=X1[190,:]
-yPredicted=y1[190,:]
+xPredicted=X1[200000,:]
+yPredicted=y1[200000,:]
 #X=np.array(([2,9],[1,5],[3,6]),dtype=float)
 #y=np.array(([92],[86],[89]),dtype=float)
 #xPredicted = np.array(([4,8]), dtype=float)
@@ -171,37 +171,29 @@ class Neural_Network(object):
 
 
 best_val=1
-NN = Neural_Network(0,7,3,21)
-for i in range(10):
+NN = Neural_Network(2,7,3,21)
+for i in range(1000):
 
 
-	for j in range(30):
-		#print("# " + str(i) + "\n")
-		#print("Input (scaled): \n" + str(X))
-		#print("Actual Output: \n" + str(y))
-		#print("Predicted Output: \n" + str(NN.forward(X)))
-		print(str(np.mean(np.square(y - NN.forward(X)))))
-		NN.train(X, y)
-		best_val=(np.mean(np.square(y - NN.forward(X))))
-		NN.saveWeights
+	#print("# " + str(i) + "\n")
+	#print("Input (scaled): \n" + str(X))
+	#print("Actual Output: \n" + str(y))
+	#print("Predicted Output: \n" + str(NN.forward(X)))
+	print(str(np.mean(np.square(y - NN.forward(X)))))
+	NN.train(X, y)
+
+NN.saveWeights
 
 	
-	if best_val < 0.01:
-
-		NN=None
-		NN = Neural_Network(1,7,3,21)
-	else:
-		NN=None
-		NN = Neural_Network(2,7,3,21)
 
 		
 	
-NN = Neural_Network(0,7,3,21)
-NN.saveWeights()
-NN.predict()
-print(yPredicted)
+#NN = Neural_Network(0,7,3,21)
+#NN.saveWeights()
+#NN.predict()
+#print(yPredicted)
 
-NN = Neural_Network(0,7,3,21)
+#NN = Neural_Network(0,7,3,21)
 
 xp=X1[180,:]
 for k in range(170000,170300):
