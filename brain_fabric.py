@@ -36,52 +36,38 @@ print(" stop ")
 # Main Rearrang Loop
 
 # Create Empty Input Array
-All_Input = np.zeros(shape=(numberofgrains*3 + 4,numberoftimesteps))
-All_Output = np.zeros(shape= (3,numberoftimesteps))
-All_Input_cond=np.zeros(shape=(7,numberoftimesteps))
+All_Input = np.zeros(shape=(numberofgrains*3 + 4,numberoftimesteps*numberofgrains))
+All_Output = np.zeros(shape= (3,numberoftimesteps*numberofgrains))
+All_Input_cond=np.zeros(shape=(7,numberoftimesteps*numberofgrains))
 
 print(All_Input.shape)
 print(All_Output.shape)
+print(All_Input_cond.shape)
 
 print(fabric_data[0,0])
 
+k=0
 for j in range(numberoftimesteps-1):
 
-	k=0
 
 	for i in range(numberofgrains-1):
 
-		All_Input[k,j]=(fabric_data[i+(j*numberofgrains),0]+180)/360
-		All_Output[0,j]=(fabric_data[0+((j+1)*numberofgrains),0]+180)/360
-		k+=1
-		All_Input[k,j]=(fabric_data[i+(j*numberofgrains),1])/180
-		All_Output[1,j]=(fabric_data[1+((j+1)*numberofgrains),1])/180		
-		k+=1
-		All_Input[k,j]=(fabric_data[i+(j*numberofgrains),2]+180)/360
-		All_Output[2,j]=(fabric_data[2+((j+1)*numberofgrains),2]+180)/360
-		k+=1
-
-	All_Input[k,j]=strain_data[j,0]
-	k+=1
-	All_Input[k,j]=strain_data[j,1]
-	k+=1
-	All_Input[k,j]=strain_data[j,2]
-	k+=1
-	All_Input[k,j]=strain_data[j,3]
+		All_Output[0,k]=(fabric_data[i+((j+1)*numberofgrains),0]+180)/360
+		All_Output[1,k]=(fabric_data[i+((j+1)*numberofgrains),1])/180		
+		All_Output[2,k]=(fabric_data[i+((j+1)*numberofgrains),2]+180)/360
 	
-	All_Input_cond[0,j]=(fabric_data[0+(j*numberofgrains),0]+180)/360
-	All_Input_cond[1,j]=(fabric_data[1+(j*numberofgrains),1]+180)/360
-	All_Input_cond[2,j]=(fabric_data[2+(j*numberofgrains),2]+180)/360
-	All_Input_cond[3,j]=strain_data[j,0]
-	All_Input_cond[4,j]=strain_data[j,1]
-	All_Input_cond[5,j]=strain_data[j,2]
-	All_Input_cond[6,j]=strain_data[j,3]
+		All_Input_cond[0,k]=(fabric_data[i+(j*numberofgrains),0]+180)/360
+		All_Input_cond[1,k]=(fabric_data[i+(j*numberofgrains),1]+180)/360
+		All_Input_cond[2,k]=(fabric_data[i+(j*numberofgrains),2]+180)/360
+		All_Input_cond[3,k]=strain_data[j,0]
+		All_Input_cond[4,k]=strain_data[j,1]
+		All_Input_cond[5,k]=strain_data[j,2]
+		All_Input_cond[6,k]=strain_data[j,3]
+
+		k+=1
 
 
 np.savetxt('All_Output.txt', All_Output, delimiter=' ')
-np.savetxt('All_Input.txt', All_Input, delimiter=' ')
-np.savetxt('All_Output_Single.txt', All_Output[0,0:50], delimiter=' ')
-np.savetxt('All_Input_Single.txt', All_Input[0:30,100:300], delimiter=' ')
 np.savetxt('Strain_out.txt', strain_data,delimiter=' ')
 
 np.savetxt('All_Input_cond.txt', All_Input_cond, delimiter=' ')
@@ -98,8 +84,8 @@ y=All_Output.transpose()
 X1=All_Input_cond.transpose()
 y1=All_Output.transpose()
 
-X=X[200:300,:]
-y=y[200:300,:]
+X=X[200000:1300000,:]
+y=y[200000:1300000,:]
 np.savetxt('T1.txt', X, delimiter=' ')
 np.savetxt('T2.txt', y, delimiter=' ')
 xPredicted=X1[190,:]
@@ -122,6 +108,11 @@ class Neural_Network(object):
 			self.W1=np.loadtxt('w1_best.txt', delimiter=' ')
 			self.W2=np.loadtxt('w2_best.txt', delimiter=' ')
 	
+		if rw==1:
+
+			self.W1=np.loadtxt('w1_b.txt', delimiter=' ')
+			self.W2=np.loadtxt('w2_b.txt', delimiter=' ')	
+
 		else:	
 
 			self.inputSize = inputSize
@@ -164,8 +155,8 @@ class Neural_Network(object):
 		self.backward(X, y, o)
 
 	def saveWeights(self):
-		np.savetxt("w1.txt", self.W1, fmt="%s")
-		np.savetxt("w2.txt", self.W2, fmt="%s")
+		np.savetxt("w1_b.txt", self.W1, fmt="%s")
+		np.savetxt("w2_b.txt", self.W2, fmt="%s")
 
 
 	def predict(self):
@@ -178,17 +169,34 @@ class Neural_Network(object):
 
 # Train Data
 
+
+best_val=1
 NN = Neural_Network(0,7,3,21)
-for i in range(100):
-	#print("# " + str(i) + "\n")
-	#print("Input (scaled): \n" + str(X))
-	#print("Actual Output: \n" + str(y))
-	#print("Predicted Output: \n" + str(NN.forward(X)))
-	print(str(np.mean(np.square(y - NN.forward(X)))))
-	NN.train(X, y)
+for i in range(10):
+
+
+	for j in range(30):
+		#print("# " + str(i) + "\n")
+		#print("Input (scaled): \n" + str(X))
+		#print("Actual Output: \n" + str(y))
+		#print("Predicted Output: \n" + str(NN.forward(X)))
+		print(str(np.mean(np.square(y - NN.forward(X)))))
+		NN.train(X, y)
+		best_val=(np.mean(np.square(y - NN.forward(X))))
+		NN.saveWeights
 
 	
+	if best_val < 0.01:
 
+		NN=None
+		NN = Neural_Network(1,7,3,21)
+	else:
+		NN=None
+		NN = Neural_Network(2,7,3,21)
+
+		
+	
+NN = Neural_Network(0,7,3,21)
 NN.saveWeights()
 NN.predict()
 print(yPredicted)
@@ -196,7 +204,7 @@ print(yPredicted)
 NN = Neural_Network(0,7,3,21)
 
 xp=X1[180,:]
-for k in range(170,300):
+for k in range(170000,170300):
 
 	xPredicted=xp
 	xp_n=NN.predict1()
@@ -205,7 +213,7 @@ for k in range(170,300):
 #	print(xp[0:3])
 	print(xp_n)
 	xp=X1[k,:]
-#	print(xp[0:3])
+	print(xp[0:3])
 #	xp[0:3]=xp_n	
 #	print(xp[0:3])	
 
